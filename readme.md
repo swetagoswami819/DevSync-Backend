@@ -6,6 +6,9 @@ DevSync is a **project & task management backend system** inspired by tools like
 
 ---
 
+## DB Schema
+* To check DB Schema click on the link below -
+  https://drawsql.app/teams/algorithm-avengers/diagrams/db-schema/embed
 ## ✨ Features
 
 ### 🔐 Authentication & Security
