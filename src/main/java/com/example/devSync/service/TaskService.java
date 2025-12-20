@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import com.example.devSync.dto.TaskDTO;
+import com.example.devSync.entity.Notification;
 import com.example.devSync.entity.Project;
 import com.example.devSync.entity.Task;
 import com.example.devSync.entity.TaskStatusHistory;
@@ -45,6 +46,10 @@ public class TaskService {
         @Autowired
         private EmailService mailService;
 
+        @Autowired
+        private NotificationService notificationService;
+
+        
         // CREATE TASK
         public TaskDTO createTask(TaskDTO taskDTO) {
 
@@ -166,6 +171,21 @@ public class TaskService {
                                 "Task Status Updated",
                                 "Status of your assigned task is changed to: " + newStatus
                         );
+                
+                //send realtime notification
+                notificationService.notifyUser(
+                        user.getId(),
+                        new Notification(
+                                null,
+                                user.getId(),
+                                "Status of your assigned task '" + task.getTitle() + "' is changed to: " + newStatus,
+                                "TASK_STATUS_UPDATED",
+                                "TASK",
+                                taskId,
+                                false,
+                                null
+                        )
+                );
 
                 return returnedTask;
 

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.devSync.dto.ProjectDTO;
 import com.example.devSync.dto.UserDTO;
+import com.example.devSync.entity.Notification;
 import com.example.devSync.entity.Project;
 import com.example.devSync.entity.User;
 import com.example.devSync.enums.ActionType;
@@ -33,6 +34,9 @@ public class ProjectService {
 
         @Autowired
         private EmailService mailService;
+
+        @Autowired
+        private NotificationService notificationService;
 
         // create Project
         public ProjectDTO createProject(ProjectDTO dto) {
@@ -136,6 +140,22 @@ public class ProjectService {
 
                 );
 
+                notificationService.notifyUser(
+                        userId,
+                        new Notification(
+                                null,
+                                userId,
+                                "You are added as a member to the project with project id " + projectId,
+                                "MEMBER_ADDED",
+                                "PROJECT",
+                                projectId,
+                                false,
+                                null
+                        )
+                );
+
+                
+
                 return "Member added successfully to the project";
         }
 
@@ -196,6 +216,20 @@ public class ProjectService {
                         email, 
                         "Member removed",
                         "You are receiving this mail becuase you are removed from the project with project Id  "+projectId+ " as a member. Thankyou DevSync Team." );
+
+                        notificationService.notifyUser(
+                        userId,
+                        new Notification(
+                                null,
+                                userId,
+                                "You are removed from the project with project id " + projectId,
+                                "MEMBER_REMOVED",
+                                "PROJECT",
+                                projectId,
+                                false,
+                                null
+                        )
+                );
 
                 return "Member removed successfully from the project";
         }
