@@ -30,13 +30,13 @@ public class AuthController {
     private JWTUtil jwtUtil;
 
     @Autowired
-    private UserService udUserService;
+    private UserService UserService;
 
     // REGISTER
     @Operation(summary = "Register a new user", description = "Registers a new user with the provided details.")
     @PostMapping("/register")
     public UserDTO registerUser(@RequestBody UserRegisterDTO userRegisterDTO) {
-        return udUserService.createUser(userRegisterDTO);
+        return UserService.createUser(userRegisterDTO);
     }
 
     // LOGIN
