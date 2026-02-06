@@ -18,9 +18,10 @@ import com.example.devSync.service.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
 
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/devSync/users")
-@CrossOrigin(origins = "http://localhost:3000")
+
 
 public class UserController {
     @Autowired

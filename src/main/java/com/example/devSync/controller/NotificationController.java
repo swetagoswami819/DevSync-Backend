@@ -3,6 +3,7 @@ package com.example.devSync.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,10 +16,11 @@ import com.example.devSync.repository.NotificationRepository;
 import com.example.devSync.repository.UserRepository;
 import com.example.devSync.service.NotificationService;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 
 
-
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/devSync/notification")
 public class NotificationController {
@@ -45,7 +47,8 @@ public class NotificationController {
     }
 
 
-    @GetMapping("/unread/{userId}")
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/unread")
     public List<Notification> getUnreadNotifications(@AuthenticationPrincipal UserDetails user){
 
         User userdb = userRepository.findByUsername(user.getUsername())

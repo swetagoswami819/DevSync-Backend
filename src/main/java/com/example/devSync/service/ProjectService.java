@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.example.devSync.dto.ProjectDTO;
@@ -18,6 +19,7 @@ import com.example.devSync.mapper.ProjectMapper;
 import com.example.devSync.mapper.UserMapper;
 import com.example.devSync.repository.ProjectRepository;
 import com.example.devSync.repository.UserRepository;
+import com.example.devSync.security.UserPrincipal;
 
 
 @Service
@@ -62,9 +64,13 @@ public class ProjectService {
         }
 
         // get project By User
-        public List<ProjectDTO> getProjectByUser(Long userId) {
-
-                User user = userRepository.findById(userId)
+        public List<ProjectDTO> getProjectByUser() {
+                
+        UserPrincipal principal = (UserPrincipal)
+        SecurityContextHolder.getContext()
+                             .getAuthentication()
+                             .getPrincipal();
+                User user = userRepository.findById(principal.getId())
                                 .orElseThrow(() -> new RuntimeException("User not found with given id"));
 
                 return projectRepository.findByCreatedBy(user)

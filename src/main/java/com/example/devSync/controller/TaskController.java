@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,6 +28,7 @@ import com.example.devSync.service.TaskService;
 
 import io.swagger.v3.oas.annotations.Operation;
 
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/devSync/tasks")
 public class TaskController {
@@ -67,9 +69,9 @@ public class TaskController {
     description = "Retrieves all tasks assigned to a specific user."
 )
     @PreAuthorize("isAuthenticated()")
-    @GetMapping("/taskByUserId/{userId}")
-    public List<TaskDTO> getTasksByUser(@PathVariable Long userId){
-        return taskService.getTasksByAssignedUser(userId);
+    @GetMapping("/taskByUserId")
+    public List<TaskDTO> getTasksByUser(){
+        return taskService.getTasksByAssignedUser();
     }
 
     //update task status

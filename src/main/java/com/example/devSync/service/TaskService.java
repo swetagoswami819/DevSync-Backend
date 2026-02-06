@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import com.example.devSync.dto.TaskDTO;
 import com.example.devSync.entity.Notification;
@@ -23,7 +24,7 @@ import com.example.devSync.repository.ProjectRepository;
 import com.example.devSync.repository.TaskRepository;
 import com.example.devSync.repository.TaskStatusHistoryRepository;
 import com.example.devSync.repository.UserRepository;
-
+import com.example.devSync.security.UserPrincipal;
 
 @Service
 public class TaskService {
@@ -49,7 +50,6 @@ public class TaskService {
         @Autowired
         private NotificationService notificationService;
 
-        
         // CREATE TASK
         public TaskDTO createTask(TaskDTO taskDTO) {
 
@@ -99,10 +99,14 @@ public class TaskService {
         }
 
         // GET TASKS BY USER
-        public List<TaskDTO> getTasksByAssignedUser(Long userId) {
+        public List<TaskDTO> getTasksByAssignedUser() {
 
-                User user = userRepository.findById(userId)
-                                .orElseThrow(() -> new RuntimeException("User not found"));
+                UserPrincipal principal = (UserPrincipal) SecurityContextHolder.getContext()
+                                .getAuthentication()
+                                .getPrincipal();
+
+                User user = userRepository.findById(principal.getId())
+                                .orElseThrow(() -> new RuntimeException("User not found with given id"));
 
                 return taskRepository.findByAssignedTo(user)
                                 .stream()
@@ -111,28 +115,29 @@ public class TaskService {
         }
 
         // UPDATE TASK STATUS
-        public TaskDTO updateTaskStatus(Long taskId, TaskStatus newStatus , Collection<? extends GrantedAuthority> authorities) throws AccessDeniedException {
+        public TaskDTO updateTaskStatus(Long taskId, TaskStatus newStatus,
+                        Collection<? extends GrantedAuthority> authorities) throws AccessDeniedException {
 
                 Task task = taskRepository.findById(taskId)
                                 .orElseThrow(() -> new RuntimeException("Task not found"));
 
                 TaskStatus oldStatus = task.getStatus();
 
-                boolean isAdmin = authorities.stream().anyMatch(a->a.getAuthority().equals("ROLE_ADMIN"));
+                boolean isAdmin = authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
-                boolean isPM = authorities.stream().anyMatch(a->a.getAuthority().equals("ROLE_PROJECT_MANAGER"));
+                boolean isPM = authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_PROJECT_MANAGER"));
 
-                //Only Admin can move to completed
-                if(newStatus==TaskStatus.COMPLETED && !isAdmin){
+                // Only Admin can move to completed
+                if (newStatus == TaskStatus.COMPLETED && !isAdmin) {
                         throw new AccessDeniedException("Only Admin can mark task as completed");
                 }
 
-                //Only Project manager can move to review
-                if(newStatus==TaskStatus.REVIEW && !isPM){
+                // Only Project manager can move to review
+                if (newStatus == TaskStatus.REVIEW && !isPM) {
                         throw new AccessDeniedException("Only project manager can mark task as review");
                 }
 
-                //other transitions are allowed for anyone(developers)
+                // other transitions are allowed for anyone(developers)
                 task.setStatus(newStatus);
                 task.setUpdatedAt(LocalDateTime.now());
 
@@ -169,23 +174,21 @@ public class TaskService {
                 mailService.sendEmail(
                                 email,
                                 "Task Status Updated",
-                                "Status of your assigned task is changed to: " + newStatus
-                        );
-                
-                //send realtime notification
+                                "Status of your assigned task is changed to: " + newStatus);
+
+                // send realtime notification
                 notificationService.notifyUser(
-                        user.getId(),
-                        new Notification(
-                                null,
                                 user.getId(),
-                                "Status of your assigned task '" + task.getTitle() + "' is changed to: " + newStatus,
-                                "TASK_STATUS_UPDATED",
-                                "TASK",
-                                taskId,
-                                false,
-                                null
-                        )
-                );
+                                new Notification(
+                                                null,
+                                                user.getId(),
+                                                "Status of your assigned task '" + task.getTitle() + "' is changed to: "
+                                                                + newStatus,
+                                                "TASK_STATUS_UPDATED",
+                                                "TASK",
+                                                taskId,
+                                                false,
+                                                null));
 
                 return returnedTask;
 

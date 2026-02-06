@@ -2,6 +2,7 @@ package com.example.devSync.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -9,6 +10,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import com.example.devSync.dto.ProjectDTO;
 import com.example.devSync.dto.UserDTO;
@@ -19,6 +22,7 @@ import io.swagger.v3.oas.annotations.Operation;
 
 import java.util.List;
 
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/devSync/projects")
 public class ProjectController {
@@ -31,7 +35,7 @@ public class ProjectController {
     summary = "Create a new project",
     description = "Creates a new project with the provided details."
     )
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN' , 'PROJECT_MANAGER')")
     @PostMapping("/create")
     public ProjectDTO createProject(@RequestBody ProjectDTO projectDTO)
     {
@@ -45,9 +49,9 @@ public class ProjectController {
     description = "Fetches all projects created by a specific user."
     )
     @PreAuthorize("isAuthenticated()")
-    @GetMapping("/user/{id}")
-    public List<ProjectDTO> getProjectByUser(@PathVariable Long id ){
-        return projectService.getProjectByUser(id);
+    @GetMapping("/user")
+    public List<ProjectDTO> getProjectByUser(){
+        return projectService.getProjectByUser();
     }
 
     //get project by id
