@@ -53,7 +53,7 @@ build/
 # Java
 # =====================
 *.class
-*.jar
+# *.jar
 *.war
 *.ear
 
